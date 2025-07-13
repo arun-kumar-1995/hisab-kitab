@@ -5,6 +5,7 @@ import app from "./src/app.js";
 import { connectDB } from "./src/configs/db.config.js";
 import { connectRedis } from "./src/configs/redis.config.js";
 import { EncryptData } from "./src/utils/keys_identifier.utils.js";
+import { GetCurrentUTCTime } from "./src/utils/date_time.utils.js";
 
 process.on("unhandledException", (err) => {
   console.log("Unhandled Exception occour", err);
@@ -34,3 +35,4 @@ startServer();
 
 // console.log(EncryptData("bokaro"));
 // console.log(crypto.randomUUID());
+console.log(GetCurrentUTCTime())

@@ -6,6 +6,8 @@ import { CatchAsyncError } from "../middleware/error.middleware.js";
 import { User } from "../models/user.models.js";
 import { UserAddress } from "../models/user_address.models.js";
 import { APIError, APIResponse } from "../utils/api_response.utils.js";
+import { GetCurrentUTCTime } from "../utils/date_time.utils.js";
+import { GenerateToken } from "../utils/jwt_token.utils.js";
 import {
   DecryptEncryptionData,
   EncryptData,
@@ -36,7 +38,7 @@ export const signup = CatchAsyncError(async (req, res, next) => {
 
   // create user address and hash password
   const [user_address, encryptedPassword] = await Promise.all([
-    await UserAddress.create({
+    UserAddress.create({
       state,
     }),
 
@@ -121,5 +123,47 @@ export const verifyPhone = CatchAsyncError(async (req, res, next) => {
 });
 
 export const login = CatchAsyncError(async (req, res, next) => {
-  
+  const { email, password } = req.body;
+  const encryptedEmail = EncryptData(email);
+  const key = REDIS_KEY.USERS;
+
+  // find user in redis db
+  const [storedPassword, encryptedPassword] = await Promise.all([
+    Redis.HGET(key, encryptedEmail),
+    EncryptData(password),
+  ]);
+
+  if (!storedPassword || storedPassword !== encryptedPassword)
+    return APIError(
+      res,
+      HTTP.STATUS.FORBIDDEN,
+      "Invalid email or password",
+      HTTP.ERROR_TYPES.AUTH_ERROR
+    );
+
+  // find user in db and update last loggedin field
+  const user = await User.findOneAndUpdate(
+    { email: encryptedEmail },
+    { $set: { last_logged_in: GetCurrentUTCTime() } },
+    { new: true }
+  );
+  // get UTC time stamps
+  if (!user)
+    return APIError(
+      res,
+      HTTP.STATUS.NOT_FOUND,
+      "User not found",
+      HTTP.ERROR_TYPES.NOT_FOUND
+    );
+
+  // generate token and store in db with ttl
+  const token = await GenerateToken({ _id: user.client_id });
+  const redisTokenKey = `${REDIS_KEY.TOKEN}:${encryptedEmail}`;
+  await Redis.SET(redisTokenKey, JSON.stringify(token), {
+    EX: 1 * 24 * 60 * 60,
+  });
+
+  return APIResponse(res, HTTP.STATUS.OK, "User logged in successfully", {
+    token,
+  });
 });

@@ -1,5 +1,4 @@
 import Joi from "joi";
-import { REGEX } from "../constants/regex.constants.js";
 import { FIELD } from "./fields.validation.js";
 
 const VERIFY_EMAIL = Joi.object({
@@ -33,7 +32,10 @@ const SIGNUP_REQUEST = Joi.object({
   last_logged_in: FIELD.LAST_LOGGED_IN,
 });
 
-const LOGIN_REQUEST = Joi.object({});
+const LOGIN_REQUEST = Joi.object({
+  email: FIELD.EMAIL,
+  password: FIELD.PASSWORD,
+});
 
 export const AUTH_VALIDATION = {
   EMAIL: FIELD.EMAIL,
