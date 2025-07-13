@@ -3,6 +3,8 @@ import "./src/configs/env.config.js";
 import app from "./src/app.js";
 
 import { connectDB } from "./src/configs/db.config.js";
+import { connectRedis } from "./src/configs/redis.config.js";
+import { EncryptData } from "./src/utils/keys_identifier.utils.js";
 
 process.on("unhandledException", (err) => {
   console.log("Unhandled Exception occour", err);
@@ -15,6 +17,10 @@ const startServer = async () => {
   try {
     // connect to database
     await connectDB();
+
+    // connect to redis
+    await connectRedis();
+
     // listen for server
     app.listen(port, () => {
       console.log(`Server started : ${process.env.HOST}:${port}`);
@@ -25,3 +31,6 @@ const startServer = async () => {
 };
 
 startServer();
+
+// console.log(EncryptData("bokaro"));
+// console.log(crypto.randomUUID());

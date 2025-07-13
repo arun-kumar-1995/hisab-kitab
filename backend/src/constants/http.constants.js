@@ -19,8 +19,8 @@ const HTTP_STATUS = {
   SERVER_ERROR: 500,
   VALIDATION_ERROR: 422,
   AUTH_ERROR: 401,
+  TOO_MANY_REQUEST : 429
 };
-
 
 const HTTP_MESSAGES = {
   OK: "Success",
@@ -57,11 +57,9 @@ const ERROR_TYPES = {
   SERVICE_UNAVAILABLE: "Service Unavailable",
 };
 
-const HTTP = {
+export const HTTP = {
   STATUS: HTTP_STATUS,
   METHOD: HTTP_METHOD,
   MESSAGE: HTTP_MESSAGES,
   ERROR_TYPES: ERROR_TYPES,
 };
-
-export default HTTP;
