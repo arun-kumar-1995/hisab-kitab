@@ -7,6 +7,7 @@ import {
   verifyEmail,
   verifyPhone,
   sendOtp,
+  logout,
 } from "../controllers/auth.controller.js";
 const userRoutes = Router();
 
@@ -27,5 +28,7 @@ userRoutes
 userRoutes
   .route("/verify-phone")
   .post(ValidateSchema(AUTH_VALIDATION.VERIFY_PHONE), verifyPhone);
+
+userRoutes.route("/logout").post(ValidateSchema(AUTH_VALIDATION.LOGOUT), logout);
 
 export default userRoutes;

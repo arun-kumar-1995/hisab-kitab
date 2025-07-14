@@ -37,6 +37,10 @@ const LOGIN_REQUEST = Joi.object({
   password: FIELD.PASSWORD,
 });
 
+const LOGOUT_REQUEST = Joi.object({
+  email : FIELD.EMAIL
+});
+
 export const AUTH_VALIDATION = {
   EMAIL: FIELD.EMAIL,
   PHONE: FIELD.PHONE,
@@ -44,4 +48,5 @@ export const AUTH_VALIDATION = {
   LOGIN: LOGIN_REQUEST,
   VERIFY_EMAIL: VERIFY_EMAIL,
   VERIFY_PHONE: VERIFY_PHONE,
+  LOGOUT : LOGOUT_REQUEST
 };

@@ -63,8 +63,8 @@ export const signup = CatchAsyncError(async (req, res, next) => {
 
 export const sendOtp = CatchAsyncError(async (req, res, next) => {
   const { email } = req.body;
-  // hisab_kitab:opt:email
-  const cachedKey = REDIS_KEY.OTP + ":" + email;
+  const encryptedEmail = EncryptData(email);
+  const cachedKey = REDIS_KEY.OTP + ":" + encryptedEmail;
 
   // check from redis if key is still present then throw error
   const isCachedKey = await Redis.GET(cachedKey);
@@ -163,7 +163,24 @@ export const login = CatchAsyncError(async (req, res, next) => {
     EX: 1 * 24 * 60 * 60,
   });
 
-  return APIResponse(res, HTTP.STATUS.OK, "User logged in successfully", {
+  return APIResponse(res, HTTP.STATUS.OK, "You are logged in successfully", {
     token,
   });
+});
+
+export const logout = CatchAsyncError(async (req, res, next) => {
+  const { email } = req.body;
+  const encryptedEmail = EncryptData(email);
+  const key = `${REDIS_KEY.TOKEN}:${encryptedEmail}`;
+  const result = await Redis.del(key);
+  if (result === 0) {
+    return APIError(
+      res,
+      HTTP.STATUS.NOT_FOUND,
+      "No active session found.",
+      HTTP.ERROR_TYPES.DATABASE_ERROR
+    );
+  }
+
+  return APIResponse(res, HTTP.STATUS.OK, "Logout successfully");
 });
