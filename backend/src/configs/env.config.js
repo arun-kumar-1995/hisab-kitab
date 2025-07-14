@@ -3,7 +3,18 @@ dotenv.config();
 
 (async () => {
   try {
-    const REQUIRED_ENV = ["NODE_ENV", "PORT", "HOST", "MONGO_URL", "DB_NAME"];
+    const REQUIRED_ENV = [
+      "NODE_ENV",
+      "PORT",
+      "HOST",
+      "MONGO_URL",
+      "DB_NAME",
+      "REDIS_HOST",
+      "REDIS_PORT",
+      "REDIS_KEY",
+      "TOKEN_SECRET",
+      "ENCRYPTION_KEY"
+    ];
 
     const missingEnv = REQUIRED_ENV.filter((key) => !process.env[key]);
     if (missingEnv.length > 0) {

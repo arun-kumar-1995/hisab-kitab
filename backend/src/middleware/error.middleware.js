@@ -1,4 +1,4 @@
-import HTTP from "../constants/http.constants.js";
+import { HTTP } from "../constants/http.constants.js";
 
 // catch async error middleware
 
@@ -16,7 +16,10 @@ export const ErrorMiddleware = (err, req, res, next) => {
   if (err instanceof ReferenceError) {
     errorType = HTTP.ERROR_TYPES.REFERENCE_ERROR;
   }
-
+ 
+  if (err.name === "TypeError") {
+    errorType = HTTP.ERROR_TYPES.SYNTAX_ERROR;
+  }
   // error response
   return res.status(statusCode).json({
     success: false,
