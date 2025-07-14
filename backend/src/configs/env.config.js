@@ -12,8 +12,11 @@ dotenv.config();
       "REDIS_HOST",
       "REDIS_PORT",
       "REDIS_KEY",
-      "TOKEN_SECRET",
-      "ENCRYPTION_KEY"
+      "ENCRYPTION_KEY",
+      "ACCESS_SECRET_KEY",
+      "REFRESH_SECRET_KEY",
+      "ACCESS_KEY_EXPIRE",
+      "REFRESH_KEY_EXPIRE",
     ];
 
     const missingEnv = REQUIRED_ENV.filter((key) => !process.env[key]);

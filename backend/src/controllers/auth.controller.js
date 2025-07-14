@@ -7,7 +7,11 @@ import { User } from "../models/user.models.js";
 import { UserAddress } from "../models/user_address.models.js";
 import { APIError, APIResponse } from "../utils/api_response.utils.js";
 import { GetCurrentUTCTime } from "../utils/date_time.utils.js";
-import { GenerateToken } from "../utils/jwt_token.utils.js";
+import {
+  generateAccessToken,
+  generateRefreshToken,
+  validateRefreshToken,
+} from "../utils/jwt_token.utils.js";
 import {
   DecryptEncryptionData,
   EncryptData,
@@ -157,15 +161,30 @@ export const login = CatchAsyncError(async (req, res, next) => {
     );
 
   // generate token and store in db with ttl
-  const token = await GenerateToken({ _id: user.client_id });
+  const access_token = await generateAccessToken({ _id: user.client_id });
+  const refresh_token = await generateRefreshToken({ _id: user.client_id });
+
   const redisTokenKey = `${REDIS_KEY.TOKEN}:${encryptedEmail}`;
-  await Redis.SET(redisTokenKey, JSON.stringify(token), {
-    EX: 1 * 24 * 60 * 60,
+  await Redis.SET(redisTokenKey, JSON.stringify(refresh_token), {
+    EX: 7 * 24 * 60 * 60,
   });
 
-  return APIResponse(res, HTTP.STATUS.OK, "You are logged in successfully", {
-    token,
-  });
+  return res
+    .status(HTTP.STATUS.OK)
+    .cookie("_refresh_token", refresh_token, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === "production",
+      sameSite: process.env.NODE_ENV === "production" ? "Strict" : "",
+      path: "/",
+      maxAge: 7 * 24 * 60 * 60 * 1000,
+    })
+    .json({
+      success: true,
+      message: "You are logged in successfully",
+      data: {
+        token: access_token,
+      },
+    });
 });
 
 export const logout = CatchAsyncError(async (req, res, next) => {
@@ -183,4 +202,39 @@ export const logout = CatchAsyncError(async (req, res, next) => {
   }
 
   return APIResponse(res, HTTP.STATUS.OK, "Logout successfully");
+});
+
+export const getNewAccessToken = CatchAsyncError(async (req, res, next) => {
+  // check refresh token actually exist inside cookie
+  // const authHeader = req.headers.authorization;
+  // const refresh_token = authHeader.split(" ")[1];
+  const refresh_token = req.cookies?._refresh_token;
+  console.log(refresh_token);
+
+  if (!refresh_token)
+    return APIError(
+      res,
+      HTTP.STATUS.FORBIDDEN,
+      "Invalid refresh token",
+      HTTP.ERROR_TYPES.FORBIDDEN
+    );
+
+  // validate refresh token
+  const decode = await validateRefreshToken(refresh_token);
+  // find user
+  const user = await User.findOne({ client_id: decode._id });
+  if (!user)
+    return APIError(
+      res,
+      HTTP.STATUS.NOT_FOUND,
+      "Invalid token",
+      HTTP.ERROR_TYPES.NOT_FOUND
+    );
+
+  // if refresh token is still valid then generate new access token and send inside response
+  const access_token = await generateAccessToken({ _id: user.client_id });
+
+  return APIResponse(res, HTTP.STATUS.OK, "Here is access token", {
+    token: access_token,
+  });
 });

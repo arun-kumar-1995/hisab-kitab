@@ -8,6 +8,7 @@ import {
   verifyPhone,
   sendOtp,
   logout,
+  getNewAccessToken,
 } from "../controllers/auth.controller.js";
 const userRoutes = Router();
 
@@ -30,5 +31,7 @@ userRoutes
   .post(ValidateSchema(AUTH_VALIDATION.VERIFY_PHONE), verifyPhone);
 
 userRoutes.route("/logout").post(ValidateSchema(AUTH_VALIDATION.LOGOUT), logout);
+
+userRoutes.route("/auth/refresh-token").post(getNewAccessToken)
 
 export default userRoutes;

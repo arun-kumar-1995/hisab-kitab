@@ -16,10 +16,19 @@ export const ErrorMiddleware = (err, req, res, next) => {
   if (err instanceof ReferenceError) {
     errorType = HTTP.ERROR_TYPES.REFERENCE_ERROR;
   }
- 
+
   if (err.name === "TypeError") {
     errorType = HTTP.ERROR_TYPES.SYNTAX_ERROR;
   }
+  if (err.name === "JsonWebTokenError") {
+    errorType = HTTP.ERROR_TYPES.JWT_ERROR;
+  }
+
+  if (err.name === "TokenExpiredError") {
+    errorType = HTTP.ERROR_TYPES.TOKEN_EXPIRED;
+    statusCode = HTTP.STATUS.FORBIDDEN
+  }
+
   // error response
   return res.status(statusCode).json({
     success: false,
