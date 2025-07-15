@@ -19,7 +19,7 @@ const HTTP_STATUS = {
   SERVER_ERROR: 500,
   VALIDATION_ERROR: 422,
   AUTH_ERROR: 401,
-  TOO_MANY_REQUEST : 429
+  TOO_MANY_REQUEST: 429,
 };
 
 const HTTP_MESSAGES = {
@@ -55,6 +55,7 @@ const ERROR_TYPES = {
   CUSTOM_ERROR: "Custom Error",
   NOT_IMPLEMENTED: "Not Implemented",
   SERVICE_UNAVAILABLE: "Service Unavailable",
+  JWT_ERROR: "JWT Error",
 };
 
 export const HTTP = {
