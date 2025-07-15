@@ -20,7 +20,7 @@ userRoutes.route("/login").post(ValidateSchema(AUTH_VALIDATION.LOGIN), login);
 
 userRoutes
   .route("/send-otp")
-  .post(ValidateSchema(AUTH_VALIDATION.EMAIL), sendOtp);
+  .post(ValidateSchema(AUTH_VALIDATION.SEND_OTP), sendOtp);
 
 userRoutes
   .route("/verify-email")
@@ -30,8 +30,10 @@ userRoutes
   .route("/verify-phone")
   .post(ValidateSchema(AUTH_VALIDATION.VERIFY_PHONE), verifyPhone);
 
-userRoutes.route("/logout").post(ValidateSchema(AUTH_VALIDATION.LOGOUT), logout);
+userRoutes
+  .route("/logout")
+  .post(ValidateSchema(AUTH_VALIDATION.LOGOUT), logout);
 
-userRoutes.route("/auth/refresh-token").post(getNewAccessToken)
+userRoutes.route("/auth/refresh-token").post(getNewAccessToken);
 
 export default userRoutes;
