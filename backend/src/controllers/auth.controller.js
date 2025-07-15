@@ -3,6 +3,7 @@ import { USER_TYPES } from "../constants/enums.constants.js";
 import { HTTP } from "../constants/http.constants.js";
 import { REDIS_KEY } from "../constants/redis_keys.constants.js";
 import { CatchAsyncError } from "../middleware/error.middleware.js";
+import { Account } from "../models/account.models.js";
 import { User } from "../models/user.models.js";
 import { UserAddress } from "../models/user_address.models.js";
 import { SendEmail } from "../services/email.service.js";
@@ -42,12 +43,18 @@ export const signup = CatchAsyncError(async (req, res, next) => {
     );
 
   // create user address and hash password
-  const [user_address, encryptedPassword] = await Promise.all([
+  const [user_address, encryptedPassword, account] = await Promise.all([
     UserAddress.create({
       state,
     }),
 
     EncryptData(req.body.password),
+
+    Account.create({
+      isEmailVerified: req.body.isEmailVerified,
+      user_type: req.body.user_type,
+      sub_role: req.body.sub_role || undefined,
+    }),
   ]);
 
   // else create new user
@@ -57,6 +64,7 @@ export const signup = CatchAsyncError(async (req, res, next) => {
     password: encryptedPassword,
     client_id: cid,
     user_address: user_address._id,
+    account: account._id,
   });
 
   // store user and password inside db
@@ -104,7 +112,7 @@ export const verifyEmail = CatchAsyncError(async (req, res, next) => {
     // check for valid otp
     Redis.GET(cachedKey),
     // find user
-    User.findOne({ email: encryptedEmail }),
+    User.findOne({ email: encryptedEmail }).select("email").lean(),
   ]);
 
   if (!user)
@@ -131,15 +139,9 @@ export const verifyEmail = CatchAsyncError(async (req, res, next) => {
       HTTP.ERROR_TYPES.BAD_REQUEST
     );
 
-  // update user
-  if (!user.isEmailVerified) {
-    user.isEmailVerified = true;
-    await user.save();
-  }
-
   // send response
   return APIResponse(res, HTTP.STATUS.OK, "Email has been verified", {
-    isEmailVerified: user.isEmailVerified,
+    isEmailVerified: true,
   });
 });
 
@@ -173,6 +175,7 @@ export const login = CatchAsyncError(async (req, res, next) => {
     { $set: { last_logged_in: GetCurrentUTCTime() } },
     { new: true }
   );
+
   // get UTC time stamps
   if (!user)
     return APIError(
@@ -182,12 +185,15 @@ export const login = CatchAsyncError(async (req, res, next) => {
       HTTP.ERROR_TYPES.NOT_FOUND
     );
 
-  // generate token and store in db with ttl
-  const access_token = await generateAccessToken({ _id: user.client_id });
-  const refresh_token = await generateRefreshToken({ _id: user.client_id });
-
   const redisTokenKey = `${REDIS_KEY.TOKEN}:${encryptedEmail}`;
-  await Redis.SET(redisTokenKey, JSON.stringify(refresh_token), {
+
+  // generate token and store in db with ttl
+  const [access_token, refresh_token] = await Promise.all([
+    generateAccessToken({ _id: user.client_id }),
+    generateRefreshToken({ _id: user.client_id }),
+  ]);
+
+  await Redis.SET(redisTokenKey, refresh_token, {
     EX: 7 * 24 * 60 * 60,
   });
 

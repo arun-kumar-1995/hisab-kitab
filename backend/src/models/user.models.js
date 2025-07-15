@@ -1,10 +1,5 @@
 import { Schema, Types, model } from "mongoose";
-import {
-  ACCOUNT_STATUS_VALUES,
-  GENDER_VALUES,
-  SUB_ROLE_VALUES,
-  USER_TYPES_VALUE,
-} from "../constants/enums.constants.js";
+import { GENDER_VALUES } from "../constants/enums.constants.js";
 
 const schema = new Schema(
   {
@@ -12,7 +7,7 @@ const schema = new Schema(
       type: String,
       required: true,
       trim: true,
-      unique:true
+      unique: true,
     },
     first_name: {
       type: String,
@@ -27,11 +22,12 @@ const schema = new Schema(
     email: {
       type: String,
       trim: true,
-      unique: true
+      unique: true,
     },
-    isEmailVerified: {
-      type: Boolean,
-      default: false,
+    password: {
+      type: String,
+      trim: true,
+      required: true,
     },
     gender: {
       type: String,
@@ -48,15 +44,6 @@ const schema = new Schema(
       type: String,
       default: "+91",
     },
-    isPhoneVerified: {
-      type: Boolean,
-      default: false,
-    },
-    password: {
-      type: String,
-      trim: true,
-      required: true
-    },
     profile_image: {
       image_url: {
         type: String,
@@ -65,25 +52,7 @@ const schema = new Schema(
         type: String,
       },
     },
-    user_type: {
-      type: String,
-      enum: USER_TYPES_VALUE,
-      default: "Customer",
-    },
-    sub_role: {
-      type: String,
-      enum: SUB_ROLE_VALUES,
-    },
     isActive: {
-      type: Boolean,
-      default: false,
-    },
-    account_status: {
-      type: String,
-      enum: ACCOUNT_STATUS_VALUES,
-      default: "pending",
-    },
-    isAccountVerified: {
       type: Boolean,
       default: false,
     },
@@ -93,7 +62,12 @@ const schema = new Schema(
     user_address: {
       type: Types.ObjectId,
       ref: "user_address",
-      required: true
+      required: true,
+    },
+    account: {
+      type: Types.ObjectId,
+      ref: "accounts",
+      required: true,
     },
   },
   { timestamps: true }
