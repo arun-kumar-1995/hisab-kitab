@@ -70,7 +70,7 @@ const otp = Joi.string()
   });
 
 const country_code = Joi.string()
-//   .required()
+  //   .required()
   .label("Country code")
   .pattern(REGEX.COUNTRY_CODE)
   .messages({
@@ -90,10 +90,11 @@ const gender = Joi.string()
   });
 
 const isEmailVerified = Joi.boolean()
-  .optional()
+  .required()
   .label("IS Email Verified")
   .messages({
     "boolean.base": `{#label} must be true or false`,
+    "any.required": `{#label} is required`,
   });
 
 const isPhoneVerified = Joi.boolean()

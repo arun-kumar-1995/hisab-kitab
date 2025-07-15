@@ -1,6 +1,7 @@
 export const USER_TYPES = {
   CUSTOMER: "customer",
   VENDOR: "vendor",
+  ADMIN: "admin",
 };
 
 export const USER_TYPES_VALUE = Object.values(USER_TYPES);
