@@ -1,4 +1,5 @@
 import { HTTP } from "../constants/http.constants.js";
+import { EmailError } from "../utils/custom_errors.utils.js";
 
 // catch async error middleware
 
@@ -13,6 +14,8 @@ export const ErrorMiddleware = (err, req, res, next) => {
   let statusCode = err.statusCode || HTTP.STATUS.INTERNAL_SERVER_ERROR;
   let errorType = HTTP.ERROR_TYPES.SERVER_ERROR;
 
+  console.log("error", err);
+
   if (err instanceof ReferenceError) {
     errorType = HTTP.ERROR_TYPES.REFERENCE_ERROR;
   }
@@ -26,7 +29,12 @@ export const ErrorMiddleware = (err, req, res, next) => {
 
   if (err.name === "TokenExpiredError") {
     errorType = HTTP.ERROR_TYPES.TOKEN_EXPIRED;
-    statusCode = HTTP.STATUS.FORBIDDEN
+    statusCode = HTTP.STATUS.FORBIDDEN;
+  }
+
+  if (err instanceof EmailError) {
+    errorType = HTTP.ERROR_TYPES.EMAIL_ERROR;
+    statusCode = HTTP.STATUS.SERVER_ERROR;
   }
 
   // error response

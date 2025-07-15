@@ -56,6 +56,7 @@ const ERROR_TYPES = {
   NOT_IMPLEMENTED: "Not Implemented",
   SERVICE_UNAVAILABLE: "Service Unavailable",
   JWT_ERROR: "JWT Error",
+  EMAIL_ERROR: "Email Error",
 };
 
 export const HTTP = {

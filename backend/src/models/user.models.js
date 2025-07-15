@@ -27,6 +27,7 @@ const schema = new Schema(
     email: {
       type: String,
       trim: true,
+      unique: true
     },
     isEmailVerified: {
       type: Boolean,

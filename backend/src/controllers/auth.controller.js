@@ -5,6 +5,7 @@ import { REDIS_KEY } from "../constants/redis_keys.constants.js";
 import { CatchAsyncError } from "../middleware/error.middleware.js";
 import { User } from "../models/user.models.js";
 import { UserAddress } from "../models/user_address.models.js";
+import { SendEmail } from "../services/email.service.js";
 import { APIError, APIResponse } from "../utils/api_response.utils.js";
 import { GetCurrentUTCTime } from "../utils/date_time.utils.js";
 import {
@@ -67,6 +68,7 @@ export const signup = CatchAsyncError(async (req, res, next) => {
 
 export const sendOtp = CatchAsyncError(async (req, res, next) => {
   const { email } = req.body;
+  console.log(email);
   const encryptedEmail = EncryptData(email);
   const cachedKey = REDIS_KEY.OTP + ":" + encryptedEmail;
 
@@ -82,24 +84,38 @@ export const sendOtp = CatchAsyncError(async (req, res, next) => {
 
   // generate 6 digit otp
   const otp = Math.floor(100000 + Math.random() * 900000);
-  console.log(otp);
-
-  // store in redis with expiry of 5 min
-  await Redis.SET(cachedKey, JSON.stringify(otp), { EX: 300 });
 
   // send otp on email with email template
+  await SendEmail(email, otp);
 
+  // store in redis with expiry of 5 min
+  await Redis.SET(cachedKey, EncryptData(otp), { EX: 300 });
   // send response
   return APIResponse(res, HTTP.STATUS.OK, "OTP send to email :" + email);
 });
 
 export const verifyEmail = CatchAsyncError(async (req, res, next) => {
   let { email, otp } = req.body;
+  const encryptedEmail = EncryptData(email);
   //   check if key exists if not otp expired
-  const cachedKey = REDIS_KEY.OTP + ":" + email;
-  // check for valid otp
-  const value = await Redis.GET(cachedKey);
-  if (!value)
+  const cachedKey = `${REDIS_KEY.OTP}:${encryptedEmail}`;
+
+  const [cachedOtp, user] = await Promise.all([
+    // check for valid otp
+    Redis.GET(cachedKey),
+    // find user
+    User.findOne({ email: encryptedEmail }),
+  ]);
+
+  if (!user)
+    return APIError(
+      res,
+      HTTP.STATUS.NOT_FOUND,
+      "Invalid email",
+      HTTP.ERROR_TYPES.BAD_REQUEST
+    );
+
+  if (!cachedOtp)
     return APIError(
       res,
       HTTP.STATUS.BAD_REQUEST,
@@ -107,7 +123,7 @@ export const verifyEmail = CatchAsyncError(async (req, res, next) => {
       HTTP.ERROR_TYPES.BAD_REQUEST
     );
 
-  if (value !== otp)
+  if (cachedOtp !== EncryptData(otp))
     return APIError(
       res,
       HTTP.STATUS.BAD_REQUEST,
@@ -115,9 +131,15 @@ export const verifyEmail = CatchAsyncError(async (req, res, next) => {
       HTTP.ERROR_TYPES.BAD_REQUEST
     );
 
+  // update user
+  if (!user.isEmailVerified) {
+    user.isEmailVerified = true;
+    await user.save();
+  }
+
   // send response
   return APIResponse(res, HTTP.STATUS.OK, "Email has been verified", {
-    isEmailVerified: true,
+    isEmailVerified: user.isEmailVerified,
   });
 });
 
