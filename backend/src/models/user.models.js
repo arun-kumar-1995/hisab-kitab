@@ -28,6 +28,7 @@ const schema = new Schema(
       type: String,
       trim: true,
       required: true,
+      select:false
     },
     gender: {
       type: String,
@@ -56,18 +57,24 @@ const schema = new Schema(
       type: Boolean,
       default: false,
     },
+    isDeleted: {
+      type: Boolean,
+      default: false,
+    },
     last_logged_in: {
       type: Date,
     },
-    user_address: {
+    isProfileComplete: {
+      type: Boolean,
+      default: false,
+    },
+    user_details: {
       type: Types.ObjectId,
-      ref: "user_address",
-      required: true,
+      ref: "user_details",
     },
     account: {
       type: Types.ObjectId,
       ref: "accounts",
-      required: true,
     },
   },
   { timestamps: true }

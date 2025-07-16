@@ -30,6 +30,7 @@ const SIGNUP_REQUEST = Joi.object({
   account_status: FIELD.ACCOUNT_STATUS,
   isAccountVerified: FIELD.IS_ACCOUNT_VERIFIED,
   last_logged_in: FIELD.LAST_LOGGED_IN,
+  state : FIELD.STATE
 });
 
 const LOGIN_REQUEST = Joi.object({

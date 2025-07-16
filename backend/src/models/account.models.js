@@ -7,6 +7,14 @@ import {
 
 const schema = new Schema(
   {
+    user_id: {
+      type: Types.ObjectId,
+      ref: "user",
+    },
+    client_id: {
+      type: String,
+      required: true,
+    },
     isEmailVerified: {
       type: Boolean,
       default: false,
@@ -14,16 +22,6 @@ const schema = new Schema(
     isPhoneVerified: {
       type: Boolean,
       default: false,
-    },
-    user_type: {
-      type: String,
-      enum: USER_TYPES_VALUE,
-      default: "customer",
-      required: true,
-    },
-    sub_role: {
-      type: String,
-      enum: SUB_ROLE_VALUES,
     },
     account_status: {
       type: String,

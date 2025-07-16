@@ -10,6 +10,8 @@ import {
   logout,
   getNewAccessToken,
 } from "../controllers/auth.controller.js";
+import { completeProfile, profile } from "../controllers/user.controller.js";
+import { USER_VALIDATION } from "../validation/user.validation.js";
 const userRoutes = Router();
 
 userRoutes
@@ -35,5 +37,11 @@ userRoutes
   .post(ValidateSchema(AUTH_VALIDATION.LOGOUT), logout);
 
 userRoutes.route("/auth/refresh-token").post(getNewAccessToken);
+
+userRoutes
+  .route("/profile/complete")
+  .post(ValidateSchema(USER_VALIDATION.COMPLETE_PROFILE), completeProfile);
+
+userRoutes.route("/profile").get(profile);
 
 export default userRoutes;
