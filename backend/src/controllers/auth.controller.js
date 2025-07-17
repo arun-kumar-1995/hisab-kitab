@@ -1,3 +1,4 @@
+import { Types } from "mongoose";
 import { Redis } from "../configs/redis.config.js";
 import { USER_TYPES } from "../constants/enums.constants.js";
 import { HTTP } from "../constants/http.constants.js";
@@ -6,14 +7,17 @@ import { CatchAsyncError } from "../middleware/error.middleware.js";
 import { Account } from "../models/account.models.js";
 import { User } from "../models/user.models.js";
 import { UserAddress } from "../models/user_address.models.js";
+import { UserDetails } from "../models/user_details.model.js";
 import { SendEmail } from "../services/email.service.js";
 import { APIError, APIResponse } from "../utils/api_response.utils.js";
 import { GetCurrentUTCTime } from "../utils/date_time.utils.js";
+
 import {
   generateAccessToken,
   generateRefreshToken,
   validateRefreshToken,
 } from "../utils/jwt_token.utils.js";
+
 import {
   DecryptEncryptionData,
   EncryptData,
@@ -42,30 +46,46 @@ export const signup = CatchAsyncError(async (req, res, next) => {
       HTTP.ERROR_TYPES.BAD_REQUEST
     );
 
-  // create user address and hash password
-  const [user_address, encryptedPassword, account] = await Promise.all([
-    UserAddress.create({
-      state,
+  const encryptedPassword = EncryptData(req.body.password);
+  // create _id so that we can use it directly 
+  const userId = new Types.ObjectId();
+  const userDetailsId = new Types.ObjectId();
+  const accountId = new Types.ObjectId();
+  const addressId = new Types.ObjectId();
+
+  const [user, user_details, account, user_address] = await Promise.all([
+    User.create({
+      _id: userId,
+      ...req.body,
+      client_id: cid,
+      email: encryptedEmail,
+      password: encryptedPassword,
+      user_details: userDetailsId,
+      account: accountId,
     }),
 
-    EncryptData(req.body.password),
-
-    Account.create({
-      isEmailVerified: req.body.isEmailVerified,
+    UserDetails.create({
+      _id: userDetailsId,
+      client_id: cid,
+      user_id: userId,
       user_type: req.body.user_type,
       sub_role: req.body.sub_role || undefined,
     }),
-  ]);
 
-  // else create new user
-  const user = await User.create({
-    ...req.body,
-    email: encryptedEmail,
-    password: encryptedPassword,
-    client_id: cid,
-    user_address: user_address._id,
-    account: account._id,
-  });
+    Account.create({
+      _id: accountId,
+      client_id: cid,
+      user_id: userId,
+      isEmailVerified: req.body.isEmailVerified,
+    }),
+
+    UserAddress.create({
+      _id: addressId,
+      client_id: cid,
+      user_details: userDetailsId,
+      state,
+    }),
+  ]);
 
   // store user and password inside db
   await Redis.HSET(key, encryptedEmail, encryptedPassword);
@@ -211,6 +231,7 @@ export const login = CatchAsyncError(async (req, res, next) => {
       message: "You are logged in successfully",
       data: {
         token: access_token,
+        isProfileComplete: user.isProfileComplete,
       },
     });
 });

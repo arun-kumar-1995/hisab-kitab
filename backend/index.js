@@ -10,7 +10,7 @@ process.on("unhandledException", (err) => {
   process.exit(1);
 });
 
-const port = parseInt(process.env.PORT, 10);
+const port = parseInt(process.env.PORT , 10);
 
 const startServer = async () => {
   try {

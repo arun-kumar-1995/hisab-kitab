@@ -10,6 +10,13 @@ import {
   logout,
   getNewAccessToken,
 } from "../controllers/auth.controller.js";
+import {
+  completeProfile,
+  profile,
+  uploadProfileImage,
+} from "../controllers/user.controller.js";
+import { USER_VALIDATION } from "../validation/user.validation.js";
+import { upload } from "../middleware/multer.middleware.js";
 const userRoutes = Router();
 
 userRoutes
@@ -35,5 +42,19 @@ userRoutes
   .post(ValidateSchema(AUTH_VALIDATION.LOGOUT), logout);
 
 userRoutes.route("/auth/refresh-token").post(getNewAccessToken);
+
+userRoutes
+  .route("/profile/complete")
+  .post(
+    upload.single("image"),
+    ValidateSchema(USER_VALIDATION.COMPLETE_PROFILE),
+    completeProfile
+  );
+
+userRoutes
+  .route("/upload-image")
+  .post(upload.single("image"), uploadProfileImage),
+  ValidateSchema(AUTH_VALIDATION.CLIENT_ID),
+  userRoutes.route("/profile").get(profile);
 
 export default userRoutes;

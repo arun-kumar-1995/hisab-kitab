@@ -8,9 +8,9 @@ import {
 } from "../constants/enums.constants.js";
 
 const client_id = Joi.string().required().label("Client Id").messages({
-  "any.required": `{#label} is required`,
+  "any.required": `{#label} is required params`,
   "string.base": `{#label} must be string`,
-  "string.empty": `{#label} is required`,
+  "string.empty": `{#label} is required params`,
 });
 
 const first_name = Joi.string()
@@ -159,6 +159,12 @@ const last_logged_in = Joi.date().optional().label("Last Logged In").messages({
 
 const state = Joi.string().required().label("State").messages({
   "string.base": `{#label} must be string`,
+  "string.empty": `{#label} is required params`,
+  "any.required": `{#label} is required params`,
+});
+
+const city = Joi.string().required().label("City").messages({
+  "string.base": `{#label} must be string`,
   "string.empty": `{#label} is required`,
   "any.required": `{#label} is required`,
 });
@@ -183,4 +189,5 @@ export const FIELD = {
   IS_ACCOUNT_VERIFIED: isAccountVerified,
   LAST_LOGGED_IN: last_logged_in,
   STATE: state,
+  CITY: city,
 };
