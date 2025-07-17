@@ -30,7 +30,7 @@ const SIGNUP_REQUEST = Joi.object({
   account_status: FIELD.ACCOUNT_STATUS,
   isAccountVerified: FIELD.IS_ACCOUNT_VERIFIED,
   last_logged_in: FIELD.LAST_LOGGED_IN,
-  state : FIELD.STATE
+  state: FIELD.STATE,
 });
 
 const LOGIN_REQUEST = Joi.object({
@@ -45,6 +45,11 @@ const LOGOUT_REQUEST = Joi.object({
 const SEND_OTP = Joi.object({
   email: FIELD.EMAIL,
 });
+
+const CLIENT_ID = Joi.object({
+  cid: FIELD.CLIENT_ID,
+});
+
 export const AUTH_VALIDATION = {
   SEND_OTP: SEND_OTP,
   PHONE: FIELD.PHONE,
@@ -53,4 +58,5 @@ export const AUTH_VALIDATION = {
   VERIFY_EMAIL: VERIFY_EMAIL,
   VERIFY_PHONE: VERIFY_PHONE,
   LOGOUT: LOGOUT_REQUEST,
+  CLIENT_ID: CLIENT_ID,
 };
